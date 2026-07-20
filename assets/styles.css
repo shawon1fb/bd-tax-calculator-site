@@ -33,15 +33,15 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --ink: #eaf3ee;
-    --muted: #9db3a7;
-    --line: #1e2b24;
-    --surface: #131c17;
-    --surface-2: #0f1712;
-    --bg: #0b120e;
-    --green-050: #10241a;
+    --muted: #9fb5a9;
+    --line: #24352c;
+    --surface: #182620;
+    --surface-2: #0e1815;
+    --bg: #0a100d;
+    --green-050: #15291f;
     --red-soft: #2a1418;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 16px 40px -16px rgba(0, 0, 0, .6);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 16px -8px rgba(0, 0, 0, .5);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 16px 40px -16px rgba(0, 0, 0, .7);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 16px -8px rgba(0, 0, 0, .6);
   }
 }
 
@@ -233,6 +233,14 @@ a:hover { text-decoration: underline; }
     0 30px 60px -20px rgba(0, 0, 0, .55),
     0 10px 24px -12px rgba(0, 0, 0, .5);
   position: absolute;
+  /* Anchor every phone to the exact same center point regardless of the
+     flex container (absolutely-positioned children ignore align/justify).
+     Centering lives in `transform` so the individual `translate` property
+     stays free for the floatY bob animation below (they'd otherwise fight
+     over the same longhand and the bob would reset the centering). */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 .phone .notch {
   position: absolute;
@@ -272,19 +280,19 @@ a:hover { text-decoration: underline; }
   animation: floatY 6s ease-in-out infinite;
 }
 .phone.p-left {
-  --pw: clamp(140px, 17vw, 190px);
+  --pw: clamp(126px, 15vw, 172px);
   z-index: 2;
-  transform: translate(-78%, 6%) rotate(-9deg);
-  filter: saturate(.94) brightness(.94);
-  opacity: .92;
+  transform: translate(-50%, -50%) translate(-52%, 8%) rotate(-7deg);
+  filter: saturate(.95) brightness(.96);
+  opacity: .9;
   animation: floatY 6s ease-in-out infinite .4s;
 }
 .phone.p-right {
-  --pw: clamp(140px, 17vw, 190px);
+  --pw: clamp(126px, 15vw, 172px);
   z-index: 2;
-  transform: translate(78%, 10%) rotate(8deg);
-  filter: saturate(.94) brightness(.94);
-  opacity: .92;
+  transform: translate(-50%, -50%) translate(52%, 12%) rotate(7deg);
+  filter: saturate(.95) brightness(.96);
+  opacity: .9;
   animation: floatY 6s ease-in-out infinite .8s;
 }
 @keyframes floatY {
@@ -311,7 +319,14 @@ a:hover { text-decoration: underline; }
 .hero-note { margin-top: 22px; font-size: 13px; color: #9fd3b5; }
 
 /* ---------- Sections ---------- */
-section { padding: 64px 0; }
+section { padding: 64px 0; position: relative; }
+section:not(.band)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(60% 60% at 15% 0%, color-mix(in srgb, var(--green-500) 6%, transparent), transparent 70%);
+}
 .section-head { max-width: 60ch; margin-bottom: 36px; }
 .section-head .eyebrow {
   text-transform: uppercase; letter-spacing: .12em;
@@ -356,17 +371,17 @@ section { padding: 64px 0; }
 /* ---------- Scroll reveal ---------- */
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+  transform: translateY(10px);
+  transition: opacity .45s ease-out, transform .45s ease-out;
 }
 .reveal.in-view { opacity: 1; transform: translateY(0); }
-.reveal-stagger.in-view > * { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-/* Apply staggered delay to direct children of .reveal-stagger */
-.reveal-stagger > * { transition-delay: calc(var(--i, 0) * 90ms); }
+/* Staggered delay for direct children of .reveal-stagger — capped so a long
+   grid (e.g. 6 feature cards) never leaves the last item visibly lagging. */
+.reveal-stagger > * { transition-delay: calc(min(var(--i, 0), 4) * 55ms); }
 
 /* ---------- Stat counters ---------- */
 .stats {
