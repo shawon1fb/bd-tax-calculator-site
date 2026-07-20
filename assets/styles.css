@@ -260,6 +260,10 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   background: #fff;
   position: relative;
+  /* `.phone` is transformed (translate/rotate); without its own compositing
+     layer some browsers fail to clip this element's rounded corners against
+     a transformed ancestor, letting the screenshot's square corner peek out. */
+  transform: translateZ(0);
 }
 .phone .screen img {
   width: 100%;
@@ -267,6 +271,9 @@ a:hover { text-decoration: underline; }
   object-fit: cover;
   object-position: top center;
   display: block;
+  /* Belt-and-suspenders: round the image itself too, in case the parent's
+     clip still doesn't apply. */
+  border-radius: inherit;
 }
 .phone .sheen {
   position: absolute;
@@ -433,8 +440,9 @@ section:not(.band)::before {
 .showcase-item .screen {
   width: 100%; height: 100%; overflow: hidden; border-radius: calc(clamp(120px, 20vw, 176px) * .12);
   background: #fff;
+  transform: translateZ(0);
 }
-.showcase-item .screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.showcase-item .screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; border-radius: inherit; }
 .showcase-item h4 { margin: 0 0 4px; font-size: .98rem; }
 .showcase-item p { margin: 0; color: var(--muted); font-size: .84rem; }
 
