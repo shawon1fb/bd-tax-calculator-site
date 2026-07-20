@@ -90,7 +90,7 @@ a:hover { text-decoration: underline; }
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--ink); }
 .brand:hover { text-decoration: none; }
-.brand svg { display: block; }
+.brand img { display: block; border-radius: 22%; }
 .nav-links { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .nav-links a {
   color: var(--muted);
