@@ -26,6 +26,7 @@
       </a>
       <nav class="nav-links">
         <a href="#features"><span class="en">Features</span><span class="bn">ফিচার</span></a>
+        <a href="#screens"><span class="en">Screens</span><span class="bn">স্ক্রিন</span></a>
         <a href="support.html"><span class="en">Support</span><span class="bn">সহায়তা</span></a>
         <a href="privacy.html"><span class="en">Privacy</span><span class="bn">গোপনীয়তা</span></a>
         <button class="lang-toggle nav-links" data-lang-toggle aria-label="Switch language">বাংলা</button>
@@ -36,71 +37,133 @@
   <!-- HERO -->
   <div class="hero">
     <div class="wrap">
-      <span class="pill">
-        <span class="en">🇧🇩 Built for Bangladeshi taxpayers</span>
-        <span class="bn">🇧🇩 বাংলাদেশের করদাতাদের জন্য</span>
-      </span>
-      <h1>
-        <span class="en">Your income tax, calculated in seconds.</span>
-        <span class="bn">সেকেন্ডেই আপনার আয়কর হিসাব।</span>
-      </h1>
-      <p class="lead">
-        <span class="en">Calculate Bangladesh income tax across five assessment years, estimate your investment rebate, verify an NBR TIN, and check tax audit status — all in one free app, in বাংলা and English.</span>
-        <span class="bn">পাঁচটি করবর্ষের আয়কর হিসাব করুন, বিনিয়োগ রেয়াত দেখুন, NBR TIN যাচাই করুন এবং কর অডিট স্ট্যাটাস দেখুন — সবকিছু একটি ফ্রি অ্যাপে, বাংলা ও ইংরেজিতে।</span>
-      </p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="#" id="appstore-link" aria-label="Download on the App Store">
-           <span class="en">Download on the App Store</span>
-           <span class="bn">App Store থেকে ডাউনলোড করুন</span>
-        </a>
-        <a class="btn btn-ghost" href="#features">
-           <span class="en">See features</span>
-           <span class="bn">ফিচার দেখুন</span>
-        </a>
+      <div class="hero-copy">
+        <span class="pill">
+          <span class="en">🇧🇩 Built for Bangladeshi taxpayers</span>
+          <span class="bn">🇧🇩 বাংলাদেশের করদাতাদের জন্য</span>
+        </span>
+        <h1>
+          <span class="en">Your income tax,<br /><span class="accent">calculated in seconds.</span></span>
+          <span class="bn">সেকেন্ডেই আপনার<br /><span class="accent">আয়কর হিসাব।</span></span>
+        </h1>
+        <p class="lead">
+          <span class="en">Calculate Bangladesh income tax across five assessment years, estimate your investment rebate, verify an NBR TIN, and check tax audit status — all in one free app, in বাংলা and English.</span>
+          <span class="bn">পাঁচটি করবর্ষের আয়কর হিসাব করুন, বিনিয়োগ রেয়াত দেখুন, NBR TIN যাচাই করুন এবং কর অডিট স্ট্যাটাস দেখুন — সবকিছু একটি ফ্রি অ্যাপে, বাংলা ও ইংরেজিতে।</span>
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#" id="appstore-link" aria-label="Download on the App Store">
+             <span class="en">Download on the App Store</span>
+             <span class="bn">App Store থেকে ডাউনলোড করুন</span>
+          </a>
+          <a class="btn btn-ghost" href="#features">
+             <span class="en">See features</span>
+             <span class="bn">ফিচার দেখুন</span>
+          </a>
+        </div>
+        <p class="hero-note">
+          <span class="en">No account needed · Free · iPhone</span>
+          <span class="bn">অ্যাকাউন্ট লাগে না · ফ্রি · iPhone</span>
+        </p>
+
+        <div class="year-ticker" aria-hidden="true">
+          <div class="track">
+            <span class="chip">AY 2022-23</span>
+            <span class="chip">AY 2023-24</span>
+            <span class="chip">AY 2024-25</span>
+            <span class="chip">AY 2025-26</span>
+            <span class="chip">AY 2026-27</span>
+            <span class="chip">AY 2022-23</span>
+            <span class="chip">AY 2023-24</span>
+            <span class="chip">AY 2024-25</span>
+            <span class="chip">AY 2025-26</span>
+            <span class="chip">AY 2026-27</span>
+          </div>
+        </div>
       </div>
-      <p class="hero-note">
-        <span class="en">No account needed · Free · iPhone</span>
-        <span class="bn">অ্যাকাউন্ট লাগে না · ফ্রি · iPhone</span>
-      </p>
+
+      <div class="phone-stage">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="phone p-left" aria-hidden="true">
+          <div class="notch"></div>
+          <div class="screen"><img src="assets/screenshots/audit.png" alt="" loading="lazy" /></div>
+          <div class="sheen"></div>
+        </div>
+        <div class="phone p-right" aria-hidden="true">
+          <div class="notch"></div>
+          <div class="screen"><img src="assets/screenshots/settings.png" alt="" loading="lazy" /></div>
+          <div class="sheen"></div>
+        </div>
+        <div class="phone p-main">
+          <div class="notch"></div>
+          <div class="screen">
+            <img src="assets/screenshots/home.png" alt="BD Tax Calculator home screen showing the current assessment year and quick actions" loading="lazy" />
+          </div>
+          <div class="sheen"></div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- STATS -->
+  <section>
+    <div class="wrap">
+      <div class="stats reveal-stagger">
+        <div class="stat reveal">
+          <div class="num" data-target="5">0</div>
+          <div class="label"><span class="en">Assessment years</span><span class="bn">করবর্ষ</span></div>
+        </div>
+        <div class="stat reveal">
+          <div class="num" data-target="79">0</div>
+          <div class="label"><span class="en">Tax FAQs answered</span><span class="bn">কর প্রশ্নোত্তর</span></div>
+        </div>
+        <div class="stat reveal">
+          <div class="num" data-target="100" data-suffix="%">0%</div>
+          <div class="label"><span class="en">Offline audit check</span><span class="bn">অফলাইন অডিট যাচাই</span></div>
+        </div>
+        <div class="stat reveal">
+          <div class="num" data-target="0">0</div>
+          <div class="label"><span class="en">Accounts required</span><span class="bn">অ্যাকাউন্ট লাগে</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- FEATURES -->
   <section id="features">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="eyebrow"><span class="en">Features</span><span class="bn">ফিচার</span></div>
         <h2><span class="en">Everything you need for BD income tax</span><span class="bn">বাংলাদেশের আয়করের সব কিছু এক জায়গায়</span></h2>
         <p><span class="en">Accurate to NBR rules, and it never leaves your data on a server.</span><span class="bn">NBR নিয়ম অনুযায়ী নির্ভুল, আর আপনার তথ্য কোনো সার্ভারে রাখে না।</span></p>
       </div>
 
-      <div class="grid cols-3">
-        <div class="card">
+      <div class="grid cols-3 reveal-stagger">
+        <div class="card reveal">
           <div class="ico">📊</div>
           <h3><span class="en">Income Tax Calculator</span><span class="bn">আয়কর ক্যালকুলেটর</span></h3>
           <p><span class="en">Enter your gross salary; the app breaks down basic pay, house rent, medical, and conveyance, then applies the right slabs for your taxpayer category.</span><span class="bn">মোট বেতন দিন; অ্যাপ মূল বেতন, বাড়ি ভাড়া, চিকিৎসা ও যাতায়াত ভাগ করে আপনার করদাতা শ্রেণি অনুযায়ী সঠিক স্ল্যাব প্রয়োগ করে।</span></p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="ico">🗓️</div>
           <h3><span class="en">5 Assessment Years</span><span class="bn">৫টি করবর্ষ</span></h3>
           <p><span class="en">Switch between 2022-23 and 2026-27 — each year's slabs, tax-free limits, minimum tax, and rebate rules are applied correctly.</span><span class="bn">২০২২-২৩ থেকে ২০২৬-২৭ পর্যন্ত বেছে নিন — প্রতিটি বছরের স্ল্যাব, করমুক্ত সীমা, ন্যূনতম কর ও রেয়াত নিয়ম সঠিকভাবে প্রযোজ্য।</span></p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="ico">💰</div>
           <h3><span class="en">Investment Rebate</span><span class="bn">বিনিয়োগ রেয়াত</span></h3>
           <p><span class="en">Add DPS, DSE shares, Sanchayapatra, mutual funds, and life insurance to see your rebate against both the income and investment limits.</span><span class="bn">DPS, DSE শেয়ার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড ও লাইফ ইন্স্যুরেন্স যোগ করে আয় ও বিনিয়োগ সীমা অনুযায়ী রেয়াত দেখুন।</span></p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="ico">🔎</div>
           <h3><span class="en">NBR TIN Check</span><span class="bn">NBR TIN যাচাই</span></h3>
           <p><span class="en">Look up TIN details — name, address, tax zone, circle, and category — directly against the official NBR-Sonali service.</span><span class="bn">সরাসরি অফিসিয়াল NBR-Sonali সেবা থেকে TIN-এর তথ্য (নাম, ঠিকানা, কর অঞ্চল, সার্কেল, শ্রেণি) দেখুন।</span></p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="ico">🛡️</div>
           <h3><span class="en">Tax Audit Checker</span><span class="bn">কর অডিট যাচাই</span></h3>
           <p><span class="en">Check whether a TIN falls under tax audit for a given assessment year, by zone, circle, and category.</span><span class="bn">নির্দিষ্ট করবর্ষে কোনো TIN অডিটের আওতায় কিনা তা অঞ্চল, সার্কেল ও শ্রেণি অনুযায়ী যাচাই করুন।</span></p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="ico">❓</div>
           <h3><span class="en">79 Tax FAQs</span><span class="bn">৭৯টি কর প্রশ্নোত্তর</span></h3>
           <p><span class="en">Common questions on Bangladesh income tax, searchable in Bangla or English.</span><span class="bn">বাংলাদেশের আয়কর নিয়ে সাধারণ প্রশ্ন, বাংলা বা ইংরেজিতে খুঁজুন।</span></p>
@@ -109,15 +172,59 @@
     </div>
   </section>
 
-  <!-- PRIVACY BAND -->
-  <section class="band">
+  <!-- SCREENSHOTS -->
+  <section id="screens" class="band">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="en">Take a look</span><span class="bn">দেখে নিন</span></div>
+        <h2><span class="en">Built to feel like NBR, made simple</span><span class="bn">সহজ করে বানানো, NBR-এর মতোই নির্ভরযোগ্য</span></h2>
+      </div>
+      <div class="showcase-row reveal-stagger">
+        <div class="showcase-item reveal">
+          <div class="frame">
+            <div class="notch"></div>
+            <div class="screen"><img src="assets/screenshots/home.png" alt="Home screen with quick actions" loading="lazy" /></div>
+          </div>
+          <h4><span class="en">Home</span><span class="bn">হোম</span></h4>
+          <p><span class="en">Your year at a glance</span><span class="bn">আপনার বছর, এক নজরে</span></p>
+        </div>
+        <div class="showcase-item reveal">
+          <div class="frame">
+            <div class="notch"></div>
+            <div class="screen"><img src="assets/screenshots/calculator.png" alt="Income tax calculator screen" loading="lazy" /></div>
+          </div>
+          <h4><span class="en">Calculator</span><span class="bn">ক্যালকুলেটর</span></h4>
+          <p><span class="en">Tax, slab by slab</span><span class="bn">স্ল্যাব ধরে ধরে কর</span></p>
+        </div>
+        <div class="showcase-item reveal">
+          <div class="frame">
+            <div class="notch"></div>
+            <div class="screen"><img src="assets/screenshots/audit.png" alt="Tax audit checker screen" loading="lazy" /></div>
+          </div>
+          <h4><span class="en">Audit Check</span><span class="bn">অডিট চেক</span></h4>
+          <p><span class="en">87,685 TIN records, offline</span><span class="bn">৮৭,৬৮৫ TIN রেকর্ড, অফলাইনে</span></p>
+        </div>
+        <div class="showcase-item reveal">
+          <div class="frame">
+            <div class="notch"></div>
+            <div class="screen"><img src="assets/screenshots/settings.png" alt="Settings screen with taxpayer categories" loading="lazy" /></div>
+          </div>
+          <h4><span class="en">Settings</span><span class="bn">সেটিংস</span></h4>
+          <p><span class="en">Language, theme, defaults</span><span class="bn">ভাষা, থিম, ডিফল্ট</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY BAND -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
         <div class="eyebrow"><span class="en">Privacy</span><span class="bn">গোপনীয়তা</span></div>
         <h2><span class="en">Your tax numbers stay on your device</span><span class="bn">আপনার করের তথ্য আপনার ডিভাইসেই থাকে</span></h2>
         <p><span class="en">No sign-up, no account. The salary and investment figures you type are never uploaded. TIN lookups are sent only to NBR, and only when you ask.</span><span class="bn">সাইন-আপ বা অ্যাকাউন্ট লাগে না। আপনি যে বেতন ও বিনিয়োগের তথ্য লেখেন তা কখনো আপলোড হয় না। TIN যাচাই শুধু আপনি চাইলে NBR-এ পাঠানো হয়।</span></p>
       </div>
-      <p style="color:var(--muted);max-width:60ch;">
+      <p class="reveal" style="color:var(--muted);max-width:60ch;">
         <span class="en">The app shows ads via Google AdMob and uses Firebase for push notifications; these may use device identifiers, as described in our <a href="privacy.html">Privacy Policy</a>.</span>
         <span class="bn">অ্যাপে Google AdMob-এর মাধ্যমে বিজ্ঞাপন দেখানো হয় এবং পুশ নোটিফিকেশনের জন্য Firebase ব্যবহার হয়; এগুলো ডিভাইস আইডেন্টিফায়ার ব্যবহার করতে পারে, বিস্তারিত আমাদের <a href="privacy.html">প্রাইভেসি পলিসিতে</a>।</span>
       </p>
@@ -125,8 +232,8 @@
   </section>
 
   <!-- CTA -->
-  <section>
-    <div class="wrap" style="text-align:center;">
+  <section class="band">
+    <div class="wrap reveal" style="text-align:center;">
       <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);letter-spacing:-.01em;margin:0 0 14px;">
         <span class="en">Ready to calculate your tax?</span>
         <span class="bn">আপনার কর হিসাব করতে প্রস্তুত?</span>

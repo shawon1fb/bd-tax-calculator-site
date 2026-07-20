@@ -10,6 +10,8 @@ Marketing + legal pages for the **BD Tax Calculator** iOS app, used for App Stor
 
 Static HTML/CSS/JS — no build step. Bilingual (English / বাংলা) via a language toggle; the choice persists in `localStorage`. Light and dark themes follow the OS setting.
 
+The landing page has a floating 3-phone hero mockup, a scrolling tax-year ticker, count-up stats, and scroll-reveal animation on sections/cards (`assets/screenshots/*.png` — real app screenshots, resized to 414px wide with `sips`). Everything respects `prefers-reduced-motion`.
+
 ## Deploy (GitHub Pages)
 
 1. Push this repo to GitHub.
