@@ -233,6 +233,13 @@ a:hover { text-decoration: underline; }
     0 30px 60px -20px rgba(0, 0, 0, .55),
     0 10px 24px -12px rgba(0, 0, 0, .5);
   position: absolute;
+  /* Hard-clip everything inside to this element's own rounded corners.
+     This is a self-clip (transform + overflow:hidden on the SAME element),
+     which every browser handles reliably — unlike clipping a child through
+     a transformed ancestor. It's what actually stops the screenshot's
+     square corners (and any compositing seam from a child's own layer)
+     from ever poking out past the rounded bezel. */
+  overflow: hidden;
   /* Anchor every phone to the exact same center point regardless of the
      flex container (absolutely-positioned children ignore align/justify).
      Centering lives in `transform` so the individual `translate` property
@@ -260,10 +267,6 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   background: #fff;
   position: relative;
-  /* `.phone` is transformed (translate/rotate); without its own compositing
-     layer some browsers fail to clip this element's rounded corners against
-     a transformed ancestor, letting the screenshot's square corner peek out. */
-  transform: translateZ(0);
 }
 .phone .screen img {
   width: 100%;
@@ -324,6 +327,53 @@ a:hover { text-decoration: underline; }
 .btn-ghost:hover { background: rgba(255, 255, 255, .16); text-decoration: none; }
 
 .hero-note { margin-top: 22px; font-size: 13px; color: #9fd3b5; }
+
+/* ---------- Store badges (App Store / Google Play) ---------- */
+.store-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.store-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  background: linear-gradient(160deg, #232326, #030303 75%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 14px;
+  padding: 10px 20px 10px 16px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .1) inset,
+    0 12px 28px -12px rgba(0, 0, 0, .6);
+  transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease;
+}
+.store-btn:hover {
+  text-decoration: none;
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, .3);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .12) inset,
+    0 20px 36px -14px rgba(0, 0, 0, .65);
+}
+.store-btn:active { transform: translateY(-1px); }
+/* Diagonal shine sweep on hover — the "premium" cue. */
+.store-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, .22) 50%, transparent 60%);
+  background-size: 250% 250%;
+  background-position: 120% 0;
+  transition: background-position .7s ease;
+  pointer-events: none;
+}
+.store-btn:hover::after { background-position: -20% 0; }
+.store-btn__icon { width: 25px; height: 25px; flex: none; fill: #fff; position: relative; z-index: 1; }
+.store-btn__text { display: flex; flex-direction: column; line-height: 1.15; text-align: left; position: relative; z-index: 1; }
+.store-btn__text small { font-size: 10.5px; font-weight: 600; letter-spacing: .03em; opacity: .82; text-transform: uppercase; }
+.store-btn__text strong { font-size: 16.5px; font-weight: 750; letter-spacing: -.01em; margin-top: 1px; }
+@media (prefers-reduced-motion: reduce) {
+  .store-btn, .store-btn::after { transition: none; }
+}
 
 /* ---------- Sections ---------- */
 section { padding: 64px 0; position: relative; }
@@ -431,6 +481,10 @@ section:not(.band)::before {
   padding: calc(clamp(120px, 20vw, 176px) * .028);
   box-shadow: var(--shadow);
   transition: transform .35s cubic-bezier(.16,1,.3,1);
+  /* Self-clip (see .phone for why this must live on the transformed element
+     itself, not a descendant) so the screenshot's square corners never show
+     past the rounded bezel, including during the hover scale/lift. */
+  overflow: hidden;
 }
 .showcase-item:hover .frame { transform: translateY(-6px) scale(1.02); }
 .showcase-item .notch {
@@ -440,7 +494,6 @@ section:not(.band)::before {
 .showcase-item .screen {
   width: 100%; height: 100%; overflow: hidden; border-radius: calc(clamp(120px, 20vw, 176px) * .12);
   background: #fff;
-  transform: translateZ(0);
 }
 .showcase-item .screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; border-radius: inherit; }
 .showcase-item h4 { margin: 0 0 4px; font-size: .98rem; }
