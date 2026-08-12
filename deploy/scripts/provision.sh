@@ -50,6 +50,19 @@ REMOTE_ENV="DEPLOY_USER='${DEPLOY_USER_NAME}' DEPLOY_PUBKEY_B64='${PUBKEY_B64}'"
 
 echo "▶ Provisioning ${TARGET}:${PORT}  (will create user '${DEPLOY_USER_NAME}' + install your key)"
 
+# Reachability first — a dead box and a bad key fail very differently, and the
+# SSH errors don't make that obvious.
+if ! nc -z -G 6 -w 6 "$HOST" "$PORT" 2>/dev/null; then
+  echo "❌ ${HOST}:${PORT} is not answering (TCP connect timed out/refused)."
+  echo "   This is a network problem, not an auth problem. Check, in order:"
+  echo "     1. Is the VM powered on and finished building? (provider panel)"
+  echo "     2. Cloud firewall / security group — allow 22, 80, 443 inbound."
+  echo "     3. Use the panel's VNC console: ip a / systemctl status ssh / ufw status"
+  echo "     4. Non-standard SSH port? set DEPLOY_SSH_PORT in deploy/.env"
+  echo "   Probe by hand:  nc -vz ${HOST} ${PORT}   ping -c3 ${HOST}"
+  exit 1
+fi
+
 # Key-based first; fall back to password via sshpass (root login on a fresh box).
 if ssh "${SSH_OPTS[@]}" -o BatchMode=yes "$TARGET" true 2>/dev/null; then
   ssh "${SSH_OPTS[@]}" "$TARGET" "${REMOTE_ENV} bash -s" < "$SCRIPT"
@@ -57,7 +70,9 @@ elif [ -n "$PASS" ]; then
   command -v sshpass >/dev/null 2>&1 || { echo "❌ need 'sshpass' to use the password (brew install hudochenkov/sshpass/sshpass | apt install sshpass)"; exit 1; }
   sshpass -p "$PASS" ssh "${SSH_OPTS[@]}" "$TARGET" "${REMOTE_ENV} bash -s" < "$SCRIPT"
 else
-  echo "❌ No key access to ${TARGET} and no DEPLOY_ROOT_PASSWORD / DEPLOY_SSH_PASSWORD set."
+  echo "❌ ${TARGET} answers on :${PORT}, but no SSH key is authorised there and"
+  echo "   DEPLOY_ROOT_PASSWORD is empty in deploy/.env — set it (fresh-box root"
+  echo "   password), or run: ssh-copy-id -p ${PORT} ${TARGET}"
   exit 1
 fi
 

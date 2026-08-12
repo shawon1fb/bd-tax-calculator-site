@@ -20,6 +20,9 @@ The landing page has a floating 3-phone hero mockup, a scrolling tax-year ticker
 Same flow as `kickoff-marketing-site`: build an image locally, push it to Docker
 Hub, then the server pulls that image. **Nothing is built on the server.**
 
+> **Full step-by-step guide, env reference and troubleshooting:
+> [`deploy/README.md`](deploy/README.md).** The summary below is the short version.
+
 ```
 Dockerfile              # nginx:alpine + the static files
 nginx.conf              # server block (try_files, gzip, app-ads.txt as text/plain)
