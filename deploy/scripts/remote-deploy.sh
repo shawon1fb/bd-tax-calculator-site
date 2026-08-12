@@ -12,9 +12,9 @@
 #
 # Prerequisites (one-time, on the server):
 #   - Docker + key-based SSH for the deploy user.
-#   - The external Docker network in DEPLOY_NETWORK already exists — the
-#     reverse-proxy (Caddy) stack creates it; this container joins it so Caddy
-#     can reach it by name.
+#   - Caddy fronting the box — bash deploy/scripts/remote-proxy.sh.
+# The DEPLOY_NETWORK docker network is created here if missing; the container
+# joins it so Caddy can reach it by service name.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."   # repo root (bd-tax-calculator-site/)
@@ -29,7 +29,7 @@ SSH_PORT="${DEPLOY_SSH_PORT:-22}"
 IMAGE_REPO="${DEPLOY_IMAGE_REPO:-shawon1fb/bd-tax-calculator-site}"
 TAG="${1:-${DEPLOY_TAG:-latest}}"
 TARGET="${SSH_USER}@${HOST}"
-NETWORK="${DEPLOY_NETWORK:-football-admin-backend-network}"
+NETWORK="${DEPLOY_NETWORK:-bd-tax-network}"
 SERVICE="bd-tax-site"
 
 export SITE_IMAGE="${IMAGE_REPO}:${TAG}"
@@ -53,10 +53,8 @@ export DOCKER_HOST="ssh://${TARGET}:${SSH_PORT}"
 docker version >/dev/null 2>&1 || { echo "❌ Docker not reachable on ${TARGET}."; exit 1; }
 
 if ! docker network inspect "$NETWORK" >/dev/null 2>&1; then
-  echo "❌ Network '${NETWORK}' not found on the server."
-  echo "   Deploy the reverse-proxy stack first, or create it:"
-  echo "     docker network create ${NETWORK}"
-  exit 1
+  echo "▶ Network '${NETWORK}' missing — creating it"
+  docker network create "$NETWORK" >/dev/null
 fi
 
 if docker compose version >/dev/null 2>&1; then DC="docker compose"; else DC="docker-compose"; fi

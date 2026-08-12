@@ -1,0 +1,37 @@
+# deploy/Caddyfile — reverse proxy for the taxhelperbd.com box (165.99.219.35).
+#
+# One Caddy container fronts the static site container on this server. Caddy
+# fetches + auto-renews a free Let's Encrypt cert per site (DNS for each host
+# must already point at this server; ports 80 + 443 open).
+#
+# Run (from deploy/scripts/remote-proxy.sh, or manually on the server):
+#   docker run -d --name bd-tax-caddy --restart unless-stopped \
+#     --network bd-tax-network -p 80:80 -p 443:443 \
+#     -e DEPLOY_DOMAIN=taxhelperbd.com \
+#     -v caddy_data:/data -v caddy_config:/config \
+#     -v /opt/bd-tax-site/Caddyfile:/etc/caddy/Caddyfile:ro \
+#     caddy:2 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+#
+# DEPLOY_DOMAIN is substituted from deploy/.env at container start.
+# `bd-tax-site` is the compose service name in docker-compose.prod.yml — Caddy
+# resolves it over the shared docker network, so no host port is published.
+{
+	# Let's Encrypt expiry notices. Override with DEPLOY_ACME_EMAIL in deploy/.env.
+	email {$DEPLOY_ACME_EMAIL:contact.marufalam@gmail.com}
+}
+
+{$DEPLOY_DOMAIN:taxhelperbd.com} {
+	encode gzip
+
+	# AdMob verification file must stay plain text at the apex.
+	header /app-ads.txt Content-Type "text/plain; charset=utf-8"
+
+	reverse_proxy bd-tax-site:80
+}
+
+# www redirect — enable ONLY after www.taxhelperbd.com has an A/AAAA record
+# pointing at this server. Without the record Caddy retries ACME forever.
+#
+# www.{$DEPLOY_DOMAIN:taxhelperbd.com} {
+# 	redir https://{$DEPLOY_DOMAIN:taxhelperbd.com}{uri} permanent
+# }

@@ -25,10 +25,19 @@ Dockerfile              # nginx:alpine + the static files
 nginx.conf              # server block (try_files, gzip, app-ads.txt as text/plain)
 docker-compose.yml      # local: builds from source, http://localhost:8089
 docker-compose.prod.yml # server: runs the image pulled from Docker Hub
-scripts/docker-publish.sh    # build (linux/amd64) + push to Docker Hub
-deploy/.env.example          # SSH creds + image tag + network
-deploy/scripts/remote-deploy.sh  # server pulls the image + restarts
+scripts/docker-publish.sh          # build (linux/amd64) + push to Docker Hub
+deploy/.env.example                # SSH creds + domain + image tag + network
+deploy/Caddyfile                   # reverse proxy: taxhelperbd.com → bd-tax-site:80
+deploy/scripts/provision.sh        # one-time: prepare a fresh VPS (from your Mac)
+deploy/scripts/provision-vps.sh    #   ↳ what runs ON the server (piped in over SSH)
+deploy/scripts/remote-deploy.sh    # server pulls the image + restarts
+deploy/scripts/remote-proxy.sh     # ship Caddyfile + run/reload Caddy (HTTPS)
 ```
+
+Server `165.99.219.35`, domain `taxhelperbd.com` — the A record must point there
+and ports 80 + 443 be open before Caddy can issue a cert. No host port is
+published for the site itself; Caddy reaches it by service name (`bd-tax-site`)
+over the `bd-tax-network` docker network.
 
 ### Local
 
@@ -37,11 +46,22 @@ docker compose up -d --build   # → http://localhost:8089
 docker compose down
 ```
 
-### Publish → deploy
+### First time (once per server)
 
 ```bash
-cp deploy/.env.example deploy/.env   # first time only — fill in SSH details
+cp deploy/.env.example deploy/.env    # fill in host, domain, DEPLOY_ROOT_PASSWORD
+bash deploy/scripts/provision.sh      # docker + `deploy` user + your SSH key + swap + ufw
+```
 
+`provision.sh` logs in as root (password from `deploy/.env`, via `sshpass`) and
+pipes `provision-vps.sh` into the box. It creates a **password-less** `deploy`
+user reachable only by the SSH key it installs — generating `~/.ssh/id_ed25519`
+first if you have none. Idempotent; re-run any time. Afterwards clear
+`DEPLOY_ROOT_PASSWORD` from `deploy/.env` and rotate the root password.
+
+### Every release
+
+```bash
 bash scripts/docker-publish.sh       # build (linux/amd64) + push to Docker Hub
 bash deploy/scripts/remote-deploy.sh # server pulls that image + restarts
 ```
@@ -53,29 +73,37 @@ bash deploy/scripts/remote-deploy.sh # server pulls that image + restarts
   semver tag on Hub; override explicitly: `bash scripts/docker-publish.sh 0.2.0`.
 - **`deploy/scripts/remote-deploy.sh`** — points the local Docker CLI at the
   server over SSH (`DOCKER_HOST=ssh://…`), `compose pull` + `up -d` with
-  `docker-compose.prod.yml`, then verifies with an in-network curl.
-  Rollback = deploy an older tag: `bash deploy/scripts/remote-deploy.sh 0.0.1`.
+  `docker-compose.prod.yml`, then verifies with an in-network curl and appends to
+  `.deploy-history`. Rollback = deploy an older tag:
+  `bash deploy/scripts/remote-deploy.sh 0.0.1`.
 
-Requires on the server: Docker, key-based SSH for the `deploy` user, and the
-external network in `DEPLOY_NETWORK` (default `football-admin-backend-network`,
-shared with Caddy) already existing — `docker network create <name>` if not.
+### HTTPS / reverse proxy
 
-### One-time proxy wiring
+```bash
+bash deploy/scripts/remote-proxy.sh          # start (or restart) Caddy
+bash deploy/scripts/remote-proxy.sh reload   # after editing deploy/Caddyfile
+bash deploy/scripts/remote-proxy.sh down     # remove it
+```
 
-No host port is published; Caddy reaches the container by service name:
+Bind mounts resolve on the *server*, so the script scp's `deploy/Caddyfile` to
+`~/bd-tax-caddy/Caddyfile` there and mounts that path into `caddy:2`. Certs live
+in the `caddy_data` volume and survive container recreation. Ordinary content
+redeploys never need this — only a Caddyfile change does.
 
 ```caddyfile
-bdtaxcalculator.app {
-  reverse_proxy bd-tax-site:80
+{$DEPLOY_DOMAIN:taxhelperbd.com} {
+	encode gzip
+	header /app-ads.txt Content-Type "text/plain; charset=utf-8"
+	reverse_proxy bd-tax-site:80
 }
 ```
 
-```bash
-docker exec afc-caddy caddy reload --config /etc/caddy/Caddyfile
-```
+The `www.` block in `deploy/Caddyfile` is commented out on purpose — enable it
+only once `www.taxhelperbd.com` has its own A record, otherwise Caddy retries
+ACME forever.
 
-App Store Connect URLs then become `https://<domain>/`, `/privacy.html`,
-`/support.html`.
+Then the App Store Connect URLs become `https://taxhelperbd.com/`,
+`/privacy.html`, `/support.html`.
 
 ## Before you publish — fill these in
 

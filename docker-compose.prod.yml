@@ -17,5 +17,5 @@ services:
 
 networks:
   site-net:
-    name: ${SITE_NETWORK:-football-admin-backend-network}
+    name: ${SITE_NETWORK:-bd-tax-network}
     external: true
