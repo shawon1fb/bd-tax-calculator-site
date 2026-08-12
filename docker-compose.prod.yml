@@ -1,0 +1,21 @@
+# Production: runs the image pulled from Docker Hub (no build on the server).
+# SITE_IMAGE and SITE_NETWORK are injected by deploy/scripts/remote-deploy.sh.
+#
+# No host ports are published — the reverse proxy (Caddy) reaches this container
+# by name over the shared external network.
+name: bd-tax-calculator-site
+
+services:
+  bd-tax-site:
+    image: ${SITE_IMAGE:-shawon1fb/bd-tax-calculator-site:latest}
+    container_name: bd-tax-calculator-site
+    restart: unless-stopped
+    expose:
+      - 80
+    networks:
+      - site-net
+
+networks:
+  site-net:
+    name: ${SITE_NETWORK:-football-admin-backend-network}
+    external: true

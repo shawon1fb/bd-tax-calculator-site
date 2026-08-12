@@ -1,6 +1,7 @@
 # BD Tax Calculator — Website
 
-**Live:** https://shawon1fb.github.io/bd-tax-calculator-site/
+**Live (GitHub Pages):** https://shawon1fb.github.io/bd-tax-calculator-site/
+**Self-hosted:** Docker + nginx behind Caddy on the VPS — see [Deploy](#deploy-vps-docker--caddy).
 
 Marketing + legal pages for the **BD Tax Calculator** iOS app, used for App Store submission.
 
@@ -14,15 +15,67 @@ Static HTML/CSS/JS — no build step. Bilingual (English / বাংলা) via 
 
 The landing page has a floating 3-phone hero mockup, a scrolling tax-year ticker, count-up stats, and scroll-reveal animation on sections/cards (`assets/screenshots/*.png` — real app screenshots, resized to 414px wide with `sips`). Everything respects `prefers-reduced-motion`.
 
-## Deploy (GitHub Pages)
+## Deploy (VPS, Docker + Caddy)
 
-1. Push this repo to GitHub.
-2. Settings → Pages → Source: `Deploy from a branch` → `main` / `root`.
-3. Pages will serve at `https://shawon1fb.github.io/bd-tax-calculator-site/`.
-4. Use these URLs in App Store Connect:
-   - Privacy Policy URL → `.../privacy.html`
-   - Support URL → `.../support.html`
-   - Marketing URL → `.../` (index)
+Same flow as `kickoff-marketing-site`: build an image locally, push it to Docker
+Hub, then the server pulls that image. **Nothing is built on the server.**
+
+```
+Dockerfile              # nginx:alpine + the static files
+nginx.conf              # server block (try_files, gzip, app-ads.txt as text/plain)
+docker-compose.yml      # local: builds from source, http://localhost:8089
+docker-compose.prod.yml # server: runs the image pulled from Docker Hub
+scripts/docker-publish.sh    # build (linux/amd64) + push to Docker Hub
+deploy/.env.example          # SSH creds + image tag + network
+deploy/scripts/remote-deploy.sh  # server pulls the image + restarts
+```
+
+### Local
+
+```bash
+docker compose up -d --build   # → http://localhost:8089
+docker compose down
+```
+
+### Publish → deploy
+
+```bash
+cp deploy/.env.example deploy/.env   # first time only — fill in SSH details
+
+bash scripts/docker-publish.sh       # build (linux/amd64) + push to Docker Hub
+bash deploy/scripts/remote-deploy.sh # server pulls that image + restarts
+```
+
+- **`scripts/docker-publish.sh`** — cross-builds `linux/amd64` via buildx (so an
+  Apple-Silicon Mac produces an image the x86_64 VPS runs), pushes three tags
+  (`<version>`, `<git-sha>`, `latest`) to `shawon1fb/bd-tax-calculator-site`, and
+  bumps `DEPLOY_TAG` in `deploy/.env`. Version auto-increments from the highest
+  semver tag on Hub; override explicitly: `bash scripts/docker-publish.sh 0.2.0`.
+- **`deploy/scripts/remote-deploy.sh`** — points the local Docker CLI at the
+  server over SSH (`DOCKER_HOST=ssh://…`), `compose pull` + `up -d` with
+  `docker-compose.prod.yml`, then verifies with an in-network curl.
+  Rollback = deploy an older tag: `bash deploy/scripts/remote-deploy.sh 0.0.1`.
+
+Requires on the server: Docker, key-based SSH for the `deploy` user, and the
+external network in `DEPLOY_NETWORK` (default `football-admin-backend-network`,
+shared with Caddy) already existing — `docker network create <name>` if not.
+
+### One-time proxy wiring
+
+No host port is published; Caddy reaches the container by service name:
+
+```caddyfile
+bdtaxcalculator.app {
+  reverse_proxy bd-tax-site:80
+}
+```
+
+```bash
+docker exec afc-caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+App Store Connect URLs then become `https://<domain>/`, `/privacy.html`,
+`/support.html`.
 
 ## Before you publish — fill these in
 

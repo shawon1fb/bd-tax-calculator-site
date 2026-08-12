@@ -1,0 +1,11 @@
+.git
+.gitignore
+.DS_Store
+.deploy-history
+README.md
+deploy/
+scripts/
+docker-compose*.yml
+Dockerfile
+*.log
+node_modules/
