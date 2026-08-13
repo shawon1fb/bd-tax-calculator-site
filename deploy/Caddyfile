@@ -1,37 +1,28 @@
-# deploy/Caddyfile — reverse proxy for the taxhelperbd.com box (165.99.219.35).
+# deploy/Caddyfile — BASE (global options only) for the 165.99.219.35 box.
 #
-# One Caddy container fronts the static site container on this server. Caddy
-# fetches + auto-renews a free Let's Encrypt cert per site (DNS for each host
-# must already point at this server; ports 80 + 443 open).
+# The live Caddyfile on the server is assembled by deploy/scripts/remote-proxy.sh:
 #
-# Run (from deploy/scripts/remote-proxy.sh, or manually on the server):
+#     this file (global options)
+#   + every "# >>> <site> >>> … # <<< <site> <<<" block already on the server
+#     that belongs to ANOTHER site (e.g. debtbooktracker.com)
+#   + deploy/caddy-site.snippet   (this site's block, __DOMAIN__ substituted)
+#
+# That is why the taxhelperbd.com block no longer lives here — it moved to
+# deploy/caddy-site.snippet. One Caddy container fronts several sites, and each
+# repo must be able to update its own block without deleting anyone else's.
+# Editing this file changes global options only.
+#
+# Caddy fetches + auto-renews a free Let's Encrypt cert per site (DNS for each
+# host must already point at this server; ports 80 + 443 open).
+#
+# The container is started by remote-proxy.sh only when none is running:
 #   docker run -d --name bd-tax-caddy --restart unless-stopped \
 #     --network bd-tax-network -p 80:80 -p 443:443 \
 #     -e DEPLOY_DOMAIN=taxhelperbd.com \
 #     -v caddy_data:/data -v caddy_config:/config \
-#     -v /opt/bd-tax-site/Caddyfile:/etc/caddy/Caddyfile:ro \
+#     -v /home/deploy/bd-tax-caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
 #     caddy:2 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
-#
-# DEPLOY_DOMAIN is substituted from deploy/.env at container start.
-# `bd-tax-site` is the compose service name in docker-compose.prod.yml — Caddy
-# resolves it over the shared docker network, so no host port is published.
 {
 	# Let's Encrypt expiry notices. Override with DEPLOY_ACME_EMAIL in deploy/.env.
 	email {$DEPLOY_ACME_EMAIL:contact.marufalam@gmail.com}
 }
-
-{$DEPLOY_DOMAIN:taxhelperbd.com} {
-	encode gzip
-
-	# AdMob verification file must stay plain text at the apex.
-	header /app-ads.txt Content-Type "text/plain; charset=utf-8"
-
-	reverse_proxy bd-tax-site:80
-}
-
-# www redirect — enable ONLY after www.taxhelperbd.com has an A/AAAA record
-# pointing at this server. Without the record Caddy retries ACME forever.
-#
-# www.{$DEPLOY_DOMAIN:taxhelperbd.com} {
-# 	redir https://{$DEPLOY_DOMAIN:taxhelperbd.com}{uri} permanent
-# }

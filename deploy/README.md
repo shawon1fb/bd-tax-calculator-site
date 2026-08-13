@@ -137,23 +137,54 @@ Fails loudly with the last 50 log lines if the check doesn't hit 200.
 
 ---
 
-## 5. HTTPS (once, then only on Caddyfile changes)
+## 5. HTTPS (once, then only on Caddy config changes)
 
 ```bash
 bash deploy/scripts/remote-proxy.sh
 ```
 
-scp's `deploy/Caddyfile` to `~/bd-tax-caddy/Caddyfile` on the server and starts
-`caddy:2` on ports 80/443, mounting that path. Certificates land in the
-`caddy_data` volume and survive container recreation.
+### One proxy, several sites
 
-```bash
-bash deploy/scripts/remote-proxy.sh reload   # after editing deploy/Caddyfile — zero downtime
-bash deploy/scripts/remote-proxy.sh down     # remove the proxy
+This box also serves **debtbooktracker.com** (repo `debtbook-legal`) through the
+same `bd-tax-caddy` container — only one process can bind ports 80/443. So the
+live Caddyfile (`~/bd-tax-caddy/Caddyfile`) is **assembled**, never overwritten:
+
+```
+  deploy/Caddyfile           global options only (ACME email)
++ other sites' blocks        copied from the live file, e.g. the debtbook one
++ deploy/caddy-site.snippet  this site's block, between its own markers
 ```
 
+Each site owns one `# >>> <name> >>> … # <<< <name> <<<` block and rewrites only
+that one, so deploying taxhelperbd.com can no longer delete debtbooktracker.com's
+route (the old script scp'd its whole Caddyfile over the live one and recreated
+the container — which did exactly that).
+
+A **running** container is never recreated: the assembled file is checked with
+`caddy validate` inside the container and applied with `caddy reload` — an
+in-process config swap, so no dropped connections and no certificate re-issue.
+On failure the previous file is restored automatically. A container is started
+only when none is running. Certificates live in the `caddy_data` volume and
+survive recreation. A timestamped `.bak` is kept server-side (10 newest).
+
+Re-running is idempotent — the file is rebuilt from scratch every time, so
+repeated deploys never accumulate blocks or blank lines.
+
+```bash
+bash deploy/scripts/remote-proxy.sh reload   # after editing the snippet — zero downtime
+bash deploy/scripts/remote-proxy.sh show     # print the live Caddyfile
+bash deploy/scripts/remote-proxy.sh down     # remove ONLY taxhelperbd.com's block
+```
+
+`down` no longer kills the proxy (that would take debtbooktracker.com down too).
+To stop everything: `docker rm -f bd-tax-caddy`.
+
 Bind mounts resolve on the **Docker host** (the server), not your Mac — that's
-why the file is shipped over first rather than mounted from `$(pwd)`.
+why the files are shipped over first rather than mounted from `$(pwd)`.
+
+**Where the site block lives:** `deploy/caddy-site.snippet`, not
+`deploy/Caddyfile`. `__DOMAIN__` in the snippet is replaced with `DEPLOY_DOMAIN`
+before shipping.
 
 Give it ~30 s for the certificate, then:
 

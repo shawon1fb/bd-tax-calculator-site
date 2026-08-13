@@ -84,27 +84,33 @@ bash deploy/scripts/remote-deploy.sh # server pulls that image + restarts
 ### HTTPS / reverse proxy
 
 ```bash
-bash deploy/scripts/remote-proxy.sh          # start (or restart) Caddy
-bash deploy/scripts/remote-proxy.sh reload   # after editing deploy/Caddyfile
-bash deploy/scripts/remote-proxy.sh down     # remove it
+bash deploy/scripts/remote-proxy.sh          # add / refresh this site's route
+bash deploy/scripts/remote-proxy.sh reload   # after editing deploy/caddy-site.snippet
+bash deploy/scripts/remote-proxy.sh show     # print the live Caddyfile
+bash deploy/scripts/remote-proxy.sh down     # remove ONLY taxhelperbd.com's route
 ```
 
-Bind mounts resolve on the *server*, so the script scp's `deploy/Caddyfile` to
-`~/bd-tax-caddy/Caddyfile` there and mounts that path into `caddy:2`. Certs live
-in the `caddy_data` volume and survive container recreation. Ordinary content
-redeploys never need this — only a Caddyfile change does.
+The same Caddy container also fronts **debtbooktracker.com** on this box, so the
+live Caddyfile is assembled — `deploy/Caddyfile` (global options) + other sites'
+marked blocks + `deploy/caddy-site.snippet` (this site's block) — validated, then
+applied with `caddy reload`. No container recreate, no downtime for either site,
+and deploying one site can't delete the other's route. Certs live in the
+`caddy_data` volume. Ordinary content redeploys never need this — only a Caddy
+config change does. Details: [deploy/README.md](deploy/README.md).
 
 ```caddyfile
-{$DEPLOY_DOMAIN:taxhelperbd.com} {
+# >>> bd-tax-calculator … >>>
+taxhelperbd.com {
 	encode gzip
 	header /app-ads.txt Content-Type "text/plain; charset=utf-8"
 	reverse_proxy bd-tax-site:80
 }
+# <<< bd-tax-calculator <<<
 ```
 
-The `www.` block in `deploy/Caddyfile` is commented out on purpose — enable it
-only once `www.taxhelperbd.com` has its own A record, otherwise Caddy retries
-ACME forever.
+The `www.` block in `deploy/caddy-site.snippet` is commented out on purpose —
+enable it only once `www.taxhelperbd.com` has its own A record, otherwise Caddy
+retries ACME forever.
 
 Then the App Store Connect URLs become `https://taxhelperbd.com/`,
 `/privacy.html`, `/support.html`.

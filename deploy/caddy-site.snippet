@@ -1,0 +1,24 @@
+# >>> bd-tax-calculator (managed by deploy/scripts/remote-proxy.sh — do not edit by hand) >>>
+# Site block for taxhelperbd.com. __DOMAIN__ is replaced with DEPLOY_DOMAIN from
+# deploy/.env before the file is shipped. `bd-tax-site` is the compose service
+# name in docker-compose.prod.yml — Caddy resolves it over the shared docker
+# network, so the site container publishes no host port.
+#
+# One Caddy container fronts several sites on this box (taxhelperbd.com,
+# debtbooktracker.com, …). Each site owns one marked block like this one and
+# only ever rewrites its own — see deploy/README.md.
+__DOMAIN__ {
+	encode gzip
+
+	# AdMob verification file must stay plain text at the apex.
+	header /app-ads.txt Content-Type "text/plain; charset=utf-8"
+
+	reverse_proxy bd-tax-site:80
+}
+
+# www — enable ONLY after www.__DOMAIN__ has an A/AAAA record pointing at this
+# server. Without the record Caddy retries ACME forever.
+# www.__DOMAIN__ {
+# 	redir https://__DOMAIN__{uri} permanent
+# }
+# <<< bd-tax-calculator <<<
