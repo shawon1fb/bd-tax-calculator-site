@@ -31,6 +31,7 @@ TAG="${1:-${DEPLOY_TAG:-latest}}"
 TARGET="${SSH_USER}@${HOST}"
 NETWORK="${DEPLOY_NETWORK:-bd-tax-network}"
 SERVICE="bd-tax-site"
+CONTAINER="bd-tax-calculator-site"
 
 export SITE_IMAGE="${IMAGE_REPO}:${TAG}"
 export SITE_NETWORK="${NETWORK}"
@@ -69,7 +70,18 @@ $COMPOSE up -d --no-build "$SERVICE"
 
 # ── 4. Verify — no host port is published (proxy-only, by design), so check
 #      from another container on the same Docker network. ──
-echo "⏳ Verifying (in-network curl)..."
+echo "⏳ Verifying (container health + in-network curl)..."
+
+# The image ships a HEALTHCHECK hitting /healthz; wait for docker to mark it
+# healthy before curling. Images published before the HEALTHCHECK existed report
+# 'none' — those skip straight to the curl.
+for _ in $(seq 1 15); do
+  health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$CONTAINER" 2>/dev/null || echo none)"
+  case "$health" in healthy|none) break ;; esac
+  sleep 2
+done
+echo "   HEALTHCHECK: ${health:-unknown}"
+
 ok=0; code=000
 for _ in $(seq 1 10); do
   code="$(docker run --rm --network "$NETWORK" curlimages/curl:latest \

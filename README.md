@@ -35,6 +35,7 @@ deploy/scripts/provision.sh        # one-time: prepare a fresh VPS (from your Ma
 deploy/scripts/provision-vps.sh    #   ↳ what runs ON the server (piped in over SSH)
 deploy/scripts/remote-deploy.sh    # server pulls the image + restarts
 deploy/scripts/remote-proxy.sh     # ship Caddyfile + run/reload Caddy (HTTPS)
+deploy/scripts/health.sh           # end-to-end health check (container → TLS → pages)
 ```
 
 Server `165.99.219.35`, domain `taxhelperbd.com` — the A record must point there

@@ -164,6 +164,41 @@ curl -s https://taxhelperbd.com/app-ads.txt
 
 ---
 
+## Health check
+
+```bash
+bash deploy/scripts/health.sh          # full report
+bash deploy/scripts/health.sh --quiet  # only failures — for cron/CI, exit 1 on any failure
+```
+
+Checks, end to end:
+
+| # | Check | Fails when |
+|---|---|---|
+| 1 | Docker reachable over SSH | server down, key broken |
+| 2 | `bd-tax-calculator-site` running + docker `HEALTHCHECK` status | container crashed / nginx dead |
+| 3 | `http://bd-tax-site/healthz` from inside the network | nginx not answering, wrong network |
+| 4 | `bd-tax-caddy` running | proxy never started |
+| 5 | DNS resolves to the server IP | record changed / not propagated |
+| 6 | `http://` redirects to `https://` | Caddy misconfigured |
+| 7 | `/`, `/privacy.html`, `/support.html`, `/app-ads.txt`, `/healthz` over HTTPS | pages missing, bad build |
+| 8 | TLS certificate expiry (warn <21 days, fail <7) | renewal broken |
+| 9 | Server disk usage (warn ≥75%, fail ≥90%) | images piling up — `docker system prune -af` |
+
+The image itself ships a `HEALTHCHECK` (`wget /healthz` every 30 s), so
+`docker ps` shows `healthy`/`unhealthy` on its own, and `remote-deploy.sh` waits
+for `healthy` before it declares the deploy good.
+
+`/healthz` returns a plain `ok` straight from nginx — no filesystem access, and
+it's kept out of the access log.
+
+Cron it on your Mac if you want to be told when the site goes down:
+
+```bash
+# crontab -e — every 15 min, only mails/prints on failure
+*/15 * * * * cd /path/to/bd-tax-calculator-site && bash deploy/scripts/health.sh --quiet
+```
+
 ## Day-to-day: content change → live
 
 Edit HTML/CSS, then:
