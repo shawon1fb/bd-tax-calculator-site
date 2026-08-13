@@ -1,6 +1,7 @@
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html privacy.html support.html app-ads.txt /usr/share/nginx/html/
+COPY index.html privacy.html support.html 404.html /usr/share/nginx/html/
+COPY app-ads.txt robots.txt sitemap.xml /usr/share/nginx/html/
 COPY assets/ /usr/share/nginx/html/assets/
 
 # Docker marks the container unhealthy if nginx stops answering — visible in
