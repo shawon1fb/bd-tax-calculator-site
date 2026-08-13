@@ -24,10 +24,10 @@
 # recreated the container — which silently dropped every other site.)
 #
 # Re-running is idempotent: the file is rebuilt from base + blocks every time,
-# so nothing accumulates. A running container is NEVER recreated — the assembled
-# file is validated inside the container and applied with `caddy reload`
-# (in-process config swap: no dropped connections, no certificate re-issue).
-# A container is started only when none is running.
+# so nothing accumulates. A running container is normally NOT recreated — the
+# assembled file is validated inside the container and applied with `caddy
+# reload` (in-process config swap: no dropped connections, no cert re-issue).
+# The one exception is a stale bind mount (see below), which needs one restart.
 #
 # deploy/.env keys used:
 #   DEPLOY_SSH_HOST / _USER / _PORT   how to reach the box
@@ -106,7 +106,9 @@ awk -v b="$B" -v e="$E" '
   skip == 0 { print }
   index($0, e) == 1 { skip = 0 }
 ' "$CF" > "${CF}.new"
-mv "${CF}.new" "$CF"
+# Write in place: a bind-mounted FILE is pinned to its inode, so `mv` would
+# leave the container reading the old file forever. Truncate + rewrite instead.
+cat "${CF}.new" > "$CF" && rm -f "${CF}.new"
 ls -t "${CF}".bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f || true
 REMOTE
   docker exec "$NAME" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
@@ -179,11 +181,44 @@ fi
 
 printf '\n' >> "$NEW"
 cat "$SNIP" >> "$NEW"
-mv "$NEW" "$CF"
+# Write in place: a bind-mounted FILE is pinned to its inode, so `mv` would
+# leave the container reading the old file forever. Truncate + rewrite instead.
+cat "$NEW" > "$CF" && rm -f "$NEW"
 
 # Keep the 10 newest backups; deploys run often and these are tiny but endless.
 ls -t "${CF}".bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f || true
 REMOTE
+
+start_caddy() {
+  echo "▶ Starting Caddy (${DOMAIN}) → ${SITE_SERVICE}:80"
+  docker rm -f "$NAME" >/dev/null 2>&1 || true   # stopped leftover / stale mount
+  docker run -d --name "$NAME" \
+    --restart unless-stopped \
+    --network "$NETWORK" \
+    -p 80:80 -p 443:443 \
+    -e DEPLOY_DOMAIN="$DOMAIN" \
+    ${EMAIL:+-e DEPLOY_ACME_EMAIL="$EMAIL"} \
+    -v caddy_data:/data -v caddy_config:/config \
+    -v "${CF}:/etc/caddy/Caddyfile:ro" \
+    caddy:2 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
+}
+
+# A bind-mounted FILE is pinned to the inode it had when the container started.
+# Any earlier `mv`-based edit (or an editor that writes a new file) leaves the
+# container reading the old inode — `caddy reload` then reports "config is
+# unchanged" while the host file clearly differs. Compare both sides and, if
+# they diverge, recreate the container once to re-bind. Certificates live in the
+# caddy_data volume, so nothing is re-issued.
+if running "$NAME"; then
+  HOST_SHA="$(ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sha256sum '${CF}'" | cut -d' ' -f1)"
+  CT_SHA="$(docker exec "$NAME" sha256sum /etc/caddy/Caddyfile 2>/dev/null | cut -d' ' -f1)"
+  if [ -n "$HOST_SHA" ] && [ "$HOST_SHA" != "$CT_SHA" ]; then
+    echo "▶ ${NAME} is bound to a stale copy of the Caddyfile — recreating it once"
+    echo "   (a few seconds of downtime; certificates are kept in the caddy_data volume)"
+    start_caddy
+    sleep 3
+  fi
+fi
 
 # ── start the proxy only if it isn't already running ──────────────────────
 if running "$NAME"; then
@@ -203,17 +238,7 @@ else
     echo "   Set CADDY_CONTAINER in deploy/.env to that container and re-run."
     exit 1
   fi
-  echo "▶ Starting Caddy (${DOMAIN}) → ${SITE_SERVICE}:80"
-  docker rm -f "$NAME" >/dev/null 2>&1 || true   # remove a stopped leftover
-  docker run -d --name "$NAME" \
-    --restart unless-stopped \
-    --network "$NETWORK" \
-    -p 80:80 -p 443:443 \
-    -e DEPLOY_DOMAIN="$DOMAIN" \
-    ${EMAIL:+-e DEPLOY_ACME_EMAIL="$EMAIL"} \
-    -v caddy_data:/data -v caddy_config:/config \
-    -v "${CF}:/etc/caddy/Caddyfile:ro" \
-    caddy:2 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
+  start_caddy
 fi
 
 # The proxy must share the site's network to resolve ${SITE_SERVICE}.
